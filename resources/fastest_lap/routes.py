@@ -41,3 +41,14 @@ def delete_fastest_lap():
             'The fastest lap has been deleted': f"{data['race']}'s fastest lap is no more. . . "
         }
     return {'error' : 'Race does not exist in the Database.'}, 400
+
+# @app.delete('/post')
+# def delete_fastest_lap():
+#     lap_data = request.get_json()
+#     lap_race = lap_data['race']
+
+#     if lap_race not in fastest_laps:
+#         return { 'message' : "Invalid Post"}, 400
+    
+#     fastest_laps.pop(lap_race)
+#     return {'The fastest lap has been deleted': f"{lap_race}'s fastest lap is no more. . . "}
