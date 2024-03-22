@@ -1,50 +1,50 @@
 from flask import request
 
-from app import app
+from flask.views import MethodView
 
+
+from . import bp
+from schemas import PitstopsSchema
 from db import pitstops
 
-@app.route('/pitstops')
-def pit_page():
-    return{
-        'pitstops' : list(pitstops.values())
-    
-    }
 
-@app.route('/pitstops', methods = ['POST'])
-def create_pitstop():
-    data = request.get_json()
-    print(data)
-    pitstops[data['position']] = data
-    return{
-        'Pitstop has been created successfully!' : pitstops[data['position']]
-    }
 
-@app.get('/pitstops')
-def get_pitstops():
-    try:
-        return list(pitstops.values()), 200
-    except:
-        return {'message':"Failed to get pitstops"}, 400
+@bp.route('/pitstops')
+class PitstopsList(MethodView):
 
-@app.route('/pitstops', methods=["PUT"])
-def update_pitstop():
-    data = request.get_json()
-    if data['position'] in pitstops:
+    @bp.arguments(PitstopsSchema)
+    def post(self, data):
+        data = request.get_json()
         pitstops[data['position']] = data
-        return {
-            'Pitstop updated successfully.' : pitstops[data['position']]
-        }
-    return {
-        'error' : 'Position out of range(1-10)'
-    }
+        return{'Pitstop has been created successfully!' : pitstops[data['position']]}, 201
+
+    @bp.response(200, PitstopsSchema(many=True))
+    def get(self):
+        try:
+            return list(pitstops.values())
+        except:
+            return {'message':"Failed to get pitstops"}, 400
+
+@bp.route('/pitstops/<int:position>')
+class Pitstops(MethodView):
+
+    @bp.response(200, PitstopsSchema)
+    def get(self, position):
+        if position in pitstops:
+            return pitstops[position]
+        return {'message' : "invalid pitstop"}, 400
+
+    @bp.arguments(PitstopsSchema)
+    def put(self, data, position):
+        if position in pitstops:
+            pitstops[position] = {k:v for k,v in data.items()}
+            return {'message' : f'Pitstop {position} updated successfully.'}
+        return {'error' : 'Position out of range(1-10)'}
 
 
-@app.route('/pitstops', methods=["DELETE"])
-def delete_pitstop():
-    data = request.get_json()
-    if data['position'] in pitstops:
-        del pitstops[data['position']]
-        return {
-            'The pitstop has been deleted': f"{data['driver']}'s pitstop is no more. . . "
-        }
+
+    def delete(self,position):
+        if position in pitstops:
+            del pitstops[position]
+            return {'message' : 'The pitstop has been deleted'}
+        return {'error' : 'Pitstop does not exist in the Database.'}, 400

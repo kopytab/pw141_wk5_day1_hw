@@ -87,14 +87,16 @@ pitstops = {
 
 fastest_laps = {
     1:{
-        'race' : 'Round 1 : Bahrain',
+        'round' : 1,
+        'race' : 'Bahrain',
         'driver' : 'Max Verstappen',
         'team' : 'Red Bull',
         'time' : '1:32.608'
     },
 
     2:{
-        'race' : 'Round 2 : Saudi Arabia',
+        'round' : 2,
+        'race' : 'Saudi Arabia',
         'driver' : 'Charles Leclerc',
         'team' : 'Ferrari',
         'time' : '1:31.632'
