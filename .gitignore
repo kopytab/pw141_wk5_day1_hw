@@ -1,3 +1,4 @@
 ffavenv
 __pychache__
 .env
+migrations

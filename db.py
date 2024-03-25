@@ -2,11 +2,11 @@
 
 pitstops = {
     1:{
-        'position' : 1,
-        'driver' : 'Charles Leclerc',
-        'team' : 'Ferrari',
-        'time' : '2.23 Sec',
-        'race' : 'Round 1 : Bahrain'
+        "position" : 1,
+        "driver" : "Charles Leclerc",
+        "team" : "Ferrari",
+        "time" : "2.23 Sec",
+        "race" : "Round 1 : Bahrain"
     },
 
     2:{

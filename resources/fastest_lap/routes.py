@@ -1,55 +1,66 @@
 from flask import request
 from flask.views import MethodView
+from flask_smorest import abort
 from . import bp
 from schemas import Fastest_lapSchema
-from db import fastest_laps
+# from db import fastest_laps
+
+from models.fl_model import FL_Model
 
 @bp.route('/fastestlaps')
 class FastestlapsList(MethodView):
     @bp.arguments(Fastest_lapSchema)
     def post(self, data):
-        data = request.get_json()
-        print(data)
-        fastest_laps[data['round']] = data
-        return{'Fastest lap has been created successfully!' : fastest_laps[data['round']]}, 201
+        try:
+
+            fl = FL_Model()
+            fl.from_dict(data)
+            fl.save_fl()
+            return{'Fastest lap has been created successfully!' : f" Round {fl.round}'s fastest lap has been created."}, 201
+        
+        except:
+            return{
+                'error' : 'Unable to create fastest lap'
+            }, 400
+        
 
     @bp.response(200, Fastest_lapSchema(many=True))
     def get(self):
         try:
-            return list(fastest_laps.values())
+            return FL_Model.query.all()
         except:
             return {'message':"Failed to get fastest laps"}, 400
         
-@bp.route('/fastestlaps/<int:round>')
+@bp.route('/fastestlaps/<int:id>')
 class Fastestlaps(MethodView):
 
     @bp.response(200, Fastest_lapSchema)
-    def get(self, round):
-        if round in fastest_laps:
-            return fastest_laps[round]
-        return {'message' : "invalid round"}, 400
+    def get(self, id):
+        fl = FL_Model.query.get(id)
+        if fl:
+            return fl
+        
+        else:
+            abort(400, message = 'not a valid fastest lap')
+        
+
     @bp.arguments(Fastest_lapSchema)
-    def put(self, data, round):
-        data = request.get_json()
-        if round in fastest_laps:
-            fastest_laps[round] = data
-            return {'Fastest lap updated successfully.' : fastest_laps[round]}, 201
-        return {'error' : 'Race does not exist in the Database.'}, 400
+    def put(self, data, id):
+        fl = FL_Model.query.get(id)
+        if fl:
+            fl.from_dict(data)
+            fl.save_fl()
+            return {"message" : "fastest lap updated successfully"}, 200
+        else:
+            abort(400, message = 'not a valid fastest lap')
+       
 
 
-    def delete(self, round):
-        if round in fastest_laps:
-            del fastest_laps[round]
-            return {'Success': "The fastest lap has been deleted"},200
-        return {'error' : 'Race does not exist in the Database.'}, 400
-
-# @app.delete('/post')
-# def delete_fastest_lap():
-#     lap_data = request.get_json()
-#     lap_race = lap_data['race']
-
-#     if lap_race not in fastest_laps:
-#         return { 'message' : "Invalid Post"}, 400
-    
-#     fastest_laps.pop(lap_race)
-#     return {'The fastest lap has been deleted': f"{lap_race}'s fastest lap is no more. . . "}
+    def delete(self, id):
+        fl = FL_Model.query.get(id)
+        if fl:
+            fl.del_fl()
+            return {"message" : "fastest lap has been deleted"},200
+        else:
+            abort(400, message = 'not a valid fastest lap')
+  

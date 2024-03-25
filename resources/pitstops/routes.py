@@ -1,11 +1,13 @@
 from flask import request
 
 from flask.views import MethodView
-
+from flask_smorest import abort
 
 from . import bp
 from schemas import PitstopsSchema
-from db import pitstops
+# from db import pitstops
+
+from models.ps_model import PS_Model
 
 
 
@@ -14,37 +16,56 @@ class PitstopsList(MethodView):
 
     @bp.arguments(PitstopsSchema)
     def post(self, data):
-        data = request.get_json()
-        pitstops[data['position']] = data
-        return{'Pitstop has been created successfully!' : pitstops[data['position']]}, 201
+        
+        try:
+            ps = PS_Model()
+            ps.from_dict(data)
+            ps.save_ps()
+            return{'Pitstop has been created successfully!' : f"{ps.driver}'s pit stop has been created"}, 201
+
+        except:
+            return{
+                'error' : 'Unable to create pit stop'
+            }, 400
+        
 
     @bp.response(200, PitstopsSchema(many=True))
     def get(self):
         try:
-            return list(pitstops.values())
+            return PS_Model.query.all()
         except:
             return {'message':"Failed to get pitstops"}, 400
 
-@bp.route('/pitstops/<int:position>')
+@bp.route('/pitstops/<int:id>')
 class Pitstops(MethodView):
 
     @bp.response(200, PitstopsSchema)
-    def get(self, position):
-        if position in pitstops:
-            return pitstops[position]
-        return {'message' : "invalid pitstop"}, 400
+    def get(self, id):
+        ps = PS_Model.query.get(id)
+        if ps:
+            return ps
+
+        else:
+            abort(400, message = 'not a valid pit stop')
 
     @bp.arguments(PitstopsSchema)
-    def put(self, data, position):
-        if position in pitstops:
-            pitstops[position] = {k:v for k,v in data.items()}
-            return {'message' : f'Pitstop {position} updated successfully.'}
-        return {'error' : 'Position out of range(1-10)'}
+    def put(self, data, id):
+        ps = PS_Model.query.get(id)
+        if ps:
+            ps.from_dict(data)
+            ps.save_ps()
+            return {"message" : "pit stop updated successfully"}, 200
+        else:
+            abort(400, message = 'not a valid pit stop')
 
 
 
-    def delete(self,position):
-        if position in pitstops:
-            del pitstops[position]
-            return {'message' : 'The pitstop has been deleted'}
-        return {'error' : 'Pitstop does not exist in the Database.'}, 400
+
+    def delete(self,id):
+        ps = PS_Model.query.get(id)
+        if ps:
+            ps.del_ps()
+            return {"message" : "pit stop has been deleted"},200
+        else:
+            abort(400, message = 'not a valid pit stop')
+
