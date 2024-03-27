@@ -1,13 +1,17 @@
-from flask import Flask
+import json
+from flask import Flask, request, jsonify
 from flask_smorest import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from datetime import datetime, timedelta, timezone
+from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
 
 from Config import Config
 
 app = Flask(__name__)
 app.config.from_object(Config)
 api = Api(app)
+jwt = JWTManager(app)
 
 
 f1db = SQLAlchemy(app)

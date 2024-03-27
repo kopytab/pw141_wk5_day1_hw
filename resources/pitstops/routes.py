@@ -2,6 +2,7 @@ from flask import request
 
 from flask.views import MethodView
 from flask_smorest import abort
+from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
 
 from . import bp
 from schemas import PitstopsSchema
@@ -13,7 +14,7 @@ from models.ps_model import PS_Model
 
 @bp.route('/pitstops')
 class PitstopsList(MethodView):
-
+    @jwt_required()
     @bp.arguments(PitstopsSchema)
     def post(self, data):
         
@@ -47,7 +48,8 @@ class Pitstops(MethodView):
 
         else:
             abort(400, message = 'not a valid pit stop')
-
+  
+    @jwt_required()
     @bp.arguments(PitstopsSchema)
     def put(self, data, id):
         ps = PS_Model.query.get(id)
@@ -60,7 +62,7 @@ class Pitstops(MethodView):
 
 
 
-
+    @jwt_required()
     def delete(self,id):
         ps = PS_Model.query.get(id)
         if ps:
