@@ -1,7 +1,6 @@
 from flask import request, jsonify
 from flask.views import MethodView
 from flask_smorest import abort
-from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, unset_jwt_cookies, jwt_required, JWTManager
 from . import bp
 from schemas import Fastest_lapSchema
 # from db import fastest_laps
@@ -10,7 +9,7 @@ from models.fl_model import FL_Model
 
 @bp.route('/fastestlaps')
 class FastestlapsList(MethodView):
-    @jwt_required()
+    
     @bp.arguments(Fastest_lapSchema)
     def post(self, data):
         try:
@@ -45,7 +44,7 @@ class Fastestlaps(MethodView):
         else:
             abort(400, message = 'not a valid fastest lap')
         
-    @jwt_required() #new line
+    
     @bp.arguments(Fastest_lapSchema)
     def put(self, data, id):
         fl = FL_Model.query.get(id)
@@ -57,7 +56,7 @@ class Fastestlaps(MethodView):
             abort(400, message = 'not a valid fastest lap')
        
 
-    @jwt_required()
+    
     def delete(self, id):
         fl = FL_Model.query.get(id)
         if fl:
@@ -67,18 +66,18 @@ class Fastestlaps(MethodView):
             abort(400, message = 'not a valid fastest lap')
   
 
-@bp.post('/login')
-def login():
-    login_data = request.get_json()
-    race = login_data['race']
-    fl = FL_Model.query.filter_by(race = race).first()
-    if fl:
-        access_token = create_access_token(identity=fl.race)
-        response = {"access_token":access_token}
-        return response
+# @bp.post('/login')
+# def login():
+#     login_data = request.get_json()
+#     race = login_data['race']
+#     fl = FL_Model.query.filter_by(race = race).first()
+#     if fl:
+#         access_token = create_access_token(identity=fl.race)
+#         response = {"access_token":access_token}
+#         return response
     
-@bp.route("/logout", methods=["POST"])
-def logout():
-    response = jsonify({"msg": "logout successful"})
-    unset_jwt_cookies(response)
-    return response
+# @bp.route("/logout", methods=["POST"])
+# def logout():
+#     response = jsonify({"msg": "logout successful"})
+#     unset_jwt_cookies(response)
+#     return response
